@@ -55,10 +55,7 @@ int get_next_line(char **line)
 	char buf;
 	char *new;
 	char *old;
-	char *leak;
 
-	leak = str_empty();
-			
 	if (line == NULL)
 		return (-1);
 	byte = 1;

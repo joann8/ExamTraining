@@ -387,7 +387,11 @@ int ft_printf(const char *input, ...)
 
 int main (void)
 {
+	char *str = malloc(10);
+	
+	str = NULL;
 	printf("%d\n", printf("j'espere que ca marche? %15s! Une autre? %.x!\n", "yes", 0));
 	printf("%d\n", ft_printf("j'espere que ca marche? %15s! une autre? %.x!\n", "yes", 0));
+	while(1);
 }
 	
