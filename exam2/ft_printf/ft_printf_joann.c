@@ -150,7 +150,21 @@ int manage_type(va_list args, const char *input, t_flag *flag, char *set2, int p
 	return (1);
 } 	
 
-void	print_str(t_flag *flag)
+void	print_char(char c, unsigned int nb)
+{
+	unsigned int i;
+
+	i = 0;
+	while (i < nb)
+	{
+		//printf("chqr c = %c\n", c);
+		//printf("nb = %u\n", nb);
+		write(1, &c, 1);
+		i++;
+	}
+}
+	
+void	print_str(t_flag *flag, int *print)
 {
 	unsigned int i;
 	unsigned int j;
@@ -163,133 +177,126 @@ void	print_str(t_flag *flag)
 	if (flag->width < flag->precision || flag->precision == 0)
 		flag->width = flag->precision;
 	//printf("flag prec = %d | flag width = %d\n", flag->precision, flag->widthig;
-	while (i < flag->width)
+	i = flag->width - flag->precision;
+	print_char(' ', i);
+	*print += i;
+	while (j < flag->precision)
 	{
-		if (flag->width - flag->precision > i )
-			write(1, " ", 1);
-		else
-		{
-			write(1, &(flag->str[j]), 1);
-			j++;
-		}
-		i++;
+		write(1, &(flag->str[j]), 1);
+		j++;
+		*print += 1;
 	}
 }
-	
-void	print_dec(t_flag *flag)
+
+void	ft_putnbr(unsigned int res1, unsigned int len, char *base, int b)
 {
-	unsigned int i;
-	unsigned int j;
 	unsigned int k;
-	unsigned int res;
 	int div;
 	int div2;
 	char c;
+	unsigned int res;
+
+		res = res1;
+	k = 0;
+	while (k < len)
+	{
+	//	printf("res = %u\n", res);
+		div = len - 1 - k;
+	//	printf("div = %d\n", div);
+		if (div > 0)
+		{
+			div2 = 1;
+			while (div > 0)
+			{
+				div2 *= b;
+				div--;
+			}
+		c = base[res / div2] ;
+		res = res - (res / div2) * div2;
+		}
+		else
+		{
+			c = base[res];
+		}
+		write(1, &c, 1);
+		k++;
+	}
+}
+
+void	print_dec(t_flag *flag, int *print)
+{
+	unsigned int i;
+	unsigned int j;
+	unsigned int res;
+	int warn ;
 
 	i = 0;
 	j = 0;
+	warn = 0;
 	if (flag->dec < 0)
 		res = -flag->dec;
 	else
 		res = flag->dec;
+	if (flag->precision == 0 && flag->dec == 0)
+		warn = 1;
 	if (flag->precision < flag->dec_len)
 		flag->precision = flag->dec_len;
 	if (flag->width < flag->precision + flag->dec_neg)
 		flag->width = flag->precision + flag->dec_neg;
 	//printf("flag prec = %d | flag width = %d\n", flag->precision, flag->width);
-	while (flag->width - flag->precision - flag->dec_neg > i )
-	{
-		write(1, " ", 1);
-		i++;
-	}
+	i = flag->width - flag->precision - flag->dec_neg;
+	print_char(' ', i);
+	*print += i;
 	if (flag->dec_neg == 1)
+	{
 		write(1, "-", 1);
-	j = 0;
-	while (flag->precision - flag->dec_len > j )
-	{
-		write(1, "0", 1);
-		j++;
+		*print += 1;
 	}
-	k = 0;
-	while (k < flag->precision - j)
-	{
-	//	printf("res = %u\n", res);
-		div = flag->dec_len - 1 - k;
-	//	printf("div = %d\n", div);
-		if (div > 0)
-		{
-			div2 = 1;
-			while (div > 0)
-			{
-				div2 *= 10;
-				div --;
-			}
-		c = res / div2 + 48;
-		res = res - (res / div2) * div2;
-		}
-		else
-		{
-			c = res + 48;
-		}
-		write(1, &c, 1);
-		k++;
+	j = flag->precision - flag->dec_len;
+	print_char('0', j);
+	*print += j;
+	if (warn == 0)
+	{	
+		ft_putnbr(res, flag->dec_len, "0123456789", 10);
+		*print += flag->dec_len;
 	}
 }
 
-void	print_hex(t_flag *flag)
+void	print_hex(t_flag *flag, int *print)
 {
 	unsigned int i;
 	unsigned int j;
-	unsigned int k;
 	unsigned int res;
-	int div;
-	int div2;
-	char c;
-	char *base;
+	int warn;
 
 	i = 0;
 	j = 0;
+	warn = 0;
 	res = flag->hex;
-	base = "0123456789abcdef";
+	if (flag->precision == 0 && flag->hex == 0)
+		warn = 1;
 	if (flag->precision < flag->hex_len)
 		flag->precision = flag->hex_len;
 	if (flag->width < flag->precision )
 		flag->width = flag->precision ;
-	//printf("flag prec = %d | flag width = %d\n", flag->precision, flag->width);
-	while (flag->width - flag->precision > i )
+//	printf("flag prec = %d | flag width = %d\n", flag->precision, flag->width);	
+	i = flag->width - flag->precision ;
+//	printf("i = %u\n", i);
+	print_char(' ', i);
+	*print += i;
+	if (flag->dec_neg == 1)
 	{
-		write(1, " ", 1);
-		i++;
+		write(1, "-", 1);
+		*print += 1;
 	}
-	j = 0;
-	while (flag->precision - flag->hex_len > j )
+	j = flag->precision - flag->hex_len;
+//	printf("j = %u\n", j);
+	print_char('0', j);
+	*print += j;
+	if (warn == 0)
 	{
-		write(1, "0", 1);
-		j++;
-	}
-	k = 0;
-	while (k < flag->precision - j)
-	{
-	//	printf("res = %u\n", res);
-		div = flag->hex_len - 1 - k;
-	//	printf("div = %d\n", div);
-		if (div > 0)
-		{
-			div2 = 1;
-			while (div > 0)
-			{
-				div2 *= 16;
-				div --;
-			}
-		c = base[res / div2];
-		res = res - (res / div2) * div2;
-		}
-		else
-		{
-			c = base[res ];
-		}
-		write(1, &c, 1);
-		k++;
+		ft_putnbr(res, flag->hex_len, "0123456789abcdef", 16);
+		*print += flag->hex_len;
 	}
 }
 
@@ -347,7 +354,7 @@ int ft_printf(const char *input, ...)
 	va_start(args, input);
 	set1 = "%";
 	set2= "sdx";
-	res = 1;
+	res = 0;
 	i = 0;
 	while (input[i])
 	{
@@ -355,6 +362,7 @@ int ft_printf(const char *input, ...)
 		{
 			write(1, &input[i], 1);
 			i++;
+			res++;
 		}
 		else
 		{
@@ -364,11 +372,11 @@ int ft_printf(const char *input, ...)
 			if (analyse_arg(input, &pos, set2, &flag) == -1)
 				return (-1);
 			if (flag.type == 's')
-				print_str(&flag);
+				print_str(&flag, &res);
 			if(flag.type == 'd')
-				print_dec(&flag);
+				print_dec(&flag, &res);
 			if(flag.type == 'x')
-				print_hex(&flag);
+				print_hex(&flag, &res);
 			i = pos + 1;
 			//printf("input[%d] = %c\n",i, input[i] );
 		}
@@ -379,7 +387,7 @@ int ft_printf(const char *input, ...)
 
 int main (void)
 {
-	printf("j'espere que ca marche? %.0s! Une autre? %.x!\n", "yes", 654);
-	ft_printf("j'espere que ca marche? %.0s! une autre? %.x!\n", "yes", 654);
+	printf("%d\n", printf("j'espere que ca marche? %15s! Une autre? %.x!\n", "yes", 0));
+	printf("%d\n", ft_printf("j'espere que ca marche? %15s! une autre? %.x!\n", "yes", 0));
 }
 	

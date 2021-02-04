@@ -6,7 +6,7 @@
 /*   By: ncolomer <ncolomer@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/11/11 16:29:19 by ncolomer          #+#    #+#             */
-/*   Updated: 2019/11/14 19:20:21 by ncolomer         ###   ########.fr       */
+/*   Updated: 2021/02/04 13:13:40 by jacher           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,9 @@ int
 {
 	int		r;
 	char	*line;
+	int i;
 
+	i = 1;
 	line = NULL;
 	while ((r = get_next_line(&line)) > 0)
 	{
@@ -31,4 +33,9 @@ int
 	printf("%s", line);
 	free(line);
 	line = NULL;
+	while( i == 1)
+	{
+		i = 2;
+		i--;
+	}
 }

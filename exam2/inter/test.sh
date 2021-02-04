@@ -1,4 +1,4 @@
-gcc -Wall -Werror -Wextra inter_joann.c -o inter
+gcc -Wall -Werror -Wextra inter_joann_bis.c -o inter
 echo "# Expected result (next line) Your result #"
 echo "---"
 echo "padinto$"

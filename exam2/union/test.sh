@@ -1,4 +1,4 @@
-gcc -Wall -Werror -Wextra union_joann.c -o union
+gcc -Wall -Werror -Wextra union_joann_bis.c -o union
 echo "# Expected result (next line) Your result #"
 echo "---"
 echo "zpadintoqefwjy$"
