@@ -107,7 +107,7 @@ int read_input(FILE *file, t_global *g, char *str)
 			if (str[i] != '\n')
 			{
 				x = i % (g->width + 1); // a retenir
-				y = i / (g->width + 1); //  a retenir
+				y = i / g->width; //  a retenir
 //a verifier	y = i / (g->width + 1); //  a retenir
 		//		printf("i = %d | x = %f | y = %f\n",i, x , y);
 				if (in_circle(x, y, &op) == 2)
