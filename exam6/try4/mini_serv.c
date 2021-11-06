@@ -271,5 +271,6 @@ int main(int ac, char **av)
 	uint16_t port = atoi(av[1]);
 	int socket = server_init(port);
 	server_run(socket);
+	close(socket);
 	return (0);
 }
