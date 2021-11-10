@@ -10,8 +10,7 @@ typedef struct s_client
 {
 	int fd;
 	int id;
-	char buf[40000];
-	int save;
+	int new;
 	struct s_client *next;
 } 				t_c;
 
@@ -41,8 +40,8 @@ void send_message(t_c** client_list, int fd, char *message, fd_set *write)
 	while (loop)
 	{
 		if (FD_ISSET(loop->fd, write) && loop->fd != fd)
-			if (send(loop->fd, message, strlen(message), 0) < 0)
-				fatal();
+		//pas de fatal ici
+			send(loop->fd, message, strlen(message), 0);
 		loop = loop->next;
 	}
 }
@@ -79,7 +78,8 @@ void add_client(t_c** client_list, int server_fd, int id, fd_set *master, fd_set
 	len = sizeof(cli);
 	fd = accept(server_fd, (struct sockaddr *)&cli, &len);
 	if (fd < 0) 
-		fatal();
+		//pas de f atal ici
+		return;
 
 	t_c* new_client;
 	new_client = malloc(sizeof(t_c));
@@ -87,7 +87,7 @@ void add_client(t_c** client_list, int server_fd, int id, fd_set *master, fd_set
 		fatal();
 	new_client->fd = fd;
 	new_client->id = id; 
-	new_client->save = 0;
+	new_client->new = 1;
 	new_client->next = NULL;
 
 	t_c* tmp = *client_list;
@@ -120,8 +120,8 @@ int get_max_fd(t_c** client_list, int server_fd)
 
 void manage_str(char *str, int client_fd, t_c** client_list, fd_set* write)
 {
-	char tmp[40000];
-	char buf[40000];
+	char tmp[40]; // important que ces buffers soient plus grands que dans le main pour la string "client"
+	char buf[40];
 
     bzero(&tmp, sizeof(tmp));
     bzero(&buf, sizeof(buf));
@@ -138,16 +138,13 @@ void manage_str(char *str, int client_fd, t_c** client_list, fd_set* write)
         if (str[i] == '\n')
         {
 			tmp[j+1] = '\0';
-			if (client->save == 0)
+			if (client->new == 1)
             	sprintf(buf, "client %d: %s",client->id, tmp);
-           	else if (client->save == 1)
-			{
-            	sprintf(buf, "client %d: %s%s", client->id, client->buf, tmp);
-				bzero(&(client->buf), sizeof(client->buf));
-				client->save = 0;
-			}
+           	else if (client->new == 0)
+            	sprintf(buf, "%s", tmp);
 			send_message(client_list, client_fd, buf, write);
             j = 0;
+			client->new = 1;
             bzero(&tmp, sizeof(tmp));
             bzero(&buf, sizeof(buf));
         }
@@ -155,9 +152,16 @@ void manage_str(char *str, int client_fd, t_c** client_list, fd_set* write)
     }
 	if (tmp[0] != '\0')
 	{
-		bzero(&(client->buf), sizeof(client->buf));
-		client->save = 1;
-		sprintf(client->buf, "%s", tmp);
+		if (client->new == 1)
+		{
+			sprintf(buf, "client %d: %s", client->id, tmp);
+			client->new = 0;
+		}
+		else
+			sprintf(buf, "%s", tmp);
+		send_message(client_list, client_fd, buf, write);
+        bzero(&tmp, sizeof(tmp));
+        bzero(&buf, sizeof(buf));
 	}
 	return;
 }
@@ -169,7 +173,7 @@ void server_run(int server_fd)
 	int res;
 	int i;
 
-	char buf[10001];
+	char buf[21];
 	bzero(buf, sizeof(buf));
 	int bytes;
 	bytes = 0;
@@ -201,14 +205,13 @@ void server_run(int server_fd)
 				{
 					add_client(&client_list, server_fd, id, &master, &write);
 					id++;
-					break; // AJOUT
-				}
+					break; 				}
 				else
 				{
 					t_c* client = find_client(&client_list, i);
-					bytes = recv(i, &buf, 10000, MSG_DONTWAIT);
+					bytes = recv(i, &buf, 20, MSG_DONTWAIT);
 					if (bytes < 0)
-						fatal();
+						break;
 					else if (bytes == 0)
 					{
             			bzero(&buf, strlen(buf));
@@ -216,7 +219,7 @@ void server_run(int server_fd)
 						send_message(&client_list, client->fd, buf, &write);
 						remove_client(&client_list, client->fd, &master);
             			bzero(&buf, sizeof(buf));
-						break; // AJOUT
+						break; 
 					}
 					else
 					{
@@ -266,5 +269,6 @@ int main(int ac, char **av)
 	uint16_t port = atoi(av[1]);
 	int socket = server_init(port);
 	server_run(socket);
+	close(socket);
 	return (0);
 }
